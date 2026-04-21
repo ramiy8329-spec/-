@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>موردين الغذائية وأهميتهم</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+--gold: #C9A84C; --gold-light: #F0D080; --gold-dark: #8B6914;
+--deep: #0A1320; --navy: #132030; --navy2: #1A2B40;
+--accent: #2196F3; --success: #27AE60; --warning: #F39C12; --danger: #E74C3C;
+--text: #E8E4D8; --text2: #9A8E6A; --border: rgba(201,168,76,0.2);
+--card: rgba(19,32,48,0.9);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Tajawal',sans-serif; background:var(--deep); color:var(--text); min-height:100vh;
+background-image: radial-gradient(ellipse at 10% 0%, rgba(201,168,76,0.06) 0%, transparent 40%),
+radial-gradient(ellipse at 90% 100%, rgba(33,150,243,0.04) 0%, transparent 40%); }
+.header { background:var(--navy); border-bottom:2px solid var(--gold); padding:0 1.5rem; height:65px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; box-shadow:0 4px 15px rgba(0,0,0,0.3); gap:10px; }
+.logo { display:flex; align-items:center; gap:12px; }
+.logo-icon { width:42px; height:42px; background:linear-gradient(135deg,var(--gold),var(--gold-dark)); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900; color:var(--deep); }
+.logo-text h1 { font-size:16px; font-weight:800; color:var(--gold); }
+.logo-text p { font-size:10px; color:var(--text2); }
+.header-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.btn { padding:6px 12px; border:none; border-radius:6px; cursor:pointer; font-family:'Tajawal'; font-size:11px; font-weight:600; transition:0.2s; display:flex; align-items:center; gap:4px; white-space:nowrap; }
+.btn-gold{background:var(--gold);color:var(--deep)} .btn-gold:hover{background:var(--gold-light)}
+.btn-blue{background:rgba(33,150,243,0.2);color:#64B5F6} .btn-red{background:rgba(231,76,60,0.2);color:#EF5350}
+.btn-green{background:rgba(39,174,96,0.2);color:#66BB6A} .btn-green:hover{background:rgba(39,174,96,0.4)}
+.date-box { font-size:11px; color:var(--text2); text-align:left; background:var(--navy2); padding:6px 10px; border-radius:6px; border:1px solid var(--border); min-width:140px; }
+.date-box strong { color:var(--gold); display:block; font-size:13px; }
+.tabs { background:var(--navy); border-bottom:1px solid var(--border); display:flex; padding:0 1.5rem; gap:4px; overflow-x:auto; }
+.tab { padding:11px 16px; cursor:pointer; font-size:13px; font-weight:500; color:var(--text2); border-bottom:3px solid transparent; transition:0.3s; white-space:nowrap; display:flex; align-items:center; gap:6px; }
+.tab:hover { color:var(--text); background:rgba(255,255,255,0.03); }
+.tab.active { color:var(--gold); border-bottom-color:var(--gold); font-weight:700; }
+.content { padding:1.5rem; max-width:1500px; margin:0 auto; }
+.tab-panel { display:none; animation: fadeUp 0.3s ease; }
+.tab-panel.active { display:block; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-bottom:1.5rem; }
+.kpi-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px; position:relative; overflow:hidden; transition:0.3s; cursor:pointer; }
+.kpi-card:hover { transform:translateY(-2px); box-shadow:0 6px 15px rgba(0,0,0,0.3); }
+.kpi-label{font-size:10px;color:var(--text2)} .kpi-value{font-size:18px;font-weight:800;color:var(--gold);margin-top:5px} .kpi-sub{font-size:9px;color:var(--text2);margin-top:3px}
+.section-title { font-size:15px; font-weight:700; color:var(--gold); margin:1.2rem 0 1rem; display:flex; align-items:center; gap:8px; }
+.section-title::after { content:''; flex:1; height:1px; background:linear-gradient(to left, transparent, var(--border)); }
+.filters { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:1.2rem; align-items:center; background:var(--navy2); padding:10px; border-radius:10px; border:1px solid var(--border); }
+.filter-group { display:flex; align-items:center; gap:6px; }
+.filter-group label { font-size:11px; color:var(--text2); }
+select, input[type="text"], input[type="number"], input[type="date"] { background:var(--deep); border:1px solid var(--border); color:var(--text); padding:6px 10px; border-radius:6px; font-family:'Tajawal'; font-size:11px; outline:none; transition:0.3s; }
+select:focus, input:focus { border-color:var(--gold); }
+.search-box { flex:1; min-width:180px; }
+.table-wrapper { background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:1.5rem; overflow-x:auto; }
+table { width:100%; border-collapse:collapse; min-width:800px; }
+thead th { background:var(--navy2); padding:9px; font-size:10px; font-weight:700; color:var(--gold); text-align:right; border-bottom:1px solid var(--border); white-space:nowrap; }
+tbody tr { border-bottom:1px solid rgba(255,255,255,0.03); transition:0.2s; }
+tbody tr:hover { background:rgba(201,168,76,0.04); }
+tbody td { padding:8px 9px; font-size:11px; }
+.amount-danger{color:#EF5350} .amount-success{color:#66BB6A} .amount-info{color:#64B5F6}
+.badge { padding:2px 6px; border-radius:10px; font-size:9px; font-weight:600; }
+.badge-active{background:rgba(39,174,96,0.2);color:#66BB6A} .badge-late{background:rgba(231,76,60,0.2);color:#EF5350}
+.badge-high{background:rgba(201,168,76,0.2);color:#C9A84C} .badge-med{background:rgba(33,150,243,0.2);color:#64B5F6}
+.card-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
+.sup-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; cursor:pointer; transition:0.3s; border-right:3px solid var(--border); }
+.sup-card:hover { transform:translateY(-3px); box-shadow:0 8px 20px rgba(0,0,0,0.4); border-right-color:var(--gold); }
+.sc-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+.sc-name { font-weight:700; font-size:13px; color:var(--text); line-height:1.3; }
+.sc-id { font-size:9px; color:var(--text2); margin-top:3px; }
+.sc-amounts { display:grid; grid-template-columns:1fr 1fr; gap:8px; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; margin-top:10px; }
+.sc-amount { text-align:center; }
+.sc-amount label { font-size:9px; color:var(--text2); display:block; margin-bottom:2px; }
+.sc-amount span { font-weight:700; font-size:12px; }
+.modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; align-items:center; justify-content:center; z-index:200; backdrop-filter:blur(4px); }
+.modal-content { background:var(--navy); border:1px solid var(--border); border-radius:14px; width:92%; max-width:900px; max-height:90vh; overflow-y:auto; padding:20px; position:relative; box-shadow:0 15px 40px rgba(0,0,0,0.6); }
+.close-modal { position:absolute; top:10px; left:10px; font-size:20px; color:var(--text2); cursor:pointer; background:rgba(255,255,255,0.05); width:28px; height:28px; border-radius:50%; border:none; }
+.form-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; margin-bottom:12px; }
+.form-group { margin-bottom:10px; }
+.form-group label { display:block; font-size:10px; color:var(--text2); margin-bottom:4px; }
+.form-group input, .form-group select, .form-group textarea { width:100%; background:var(--deep); border:1px solid var(--border); color:var(--text); padding:6px; border-radius:6px; font-family:'Tajawal'; font-size:11px; }
+.chart-container { position:relative; height:280px; margin-bottom:1.2rem; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px; }
+.toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(100px); background:var(--navy2); border:1px solid var(--gold); color:var(--text); padding:10px 18px; border-radius:10px; font-size:12px; z-index:999; transition:0.4s; box-shadow:0 8px 20px rgba(0,0,0,0.5); display:flex; align-items:center; gap:8px; }
+.toast.show { transform:translateX(-50%) translateY(0); }
+.toast.success{border-left:4px solid var(--success)} .toast.error{border-left:4px solid var(--danger)}
+.drop-zone { border:2px dashed var(--border); border-radius:10px; padding:15px; text-align:center; color:var(--text2); cursor:pointer; transition:0.3s; margin-bottom:10px; }
+.drop-zone:hover, .drop-zone.dragover { background:rgba(201,168,76,0.1); border-color:var(--gold); }
+.study-table th { background: var(--navy); color: var(--gold); }
+.priority-1 { border-right: 4px solid #C9A84C; }
+.priority-2 { border-right: 4px solid #64B5F6; }
+.priority-3 { border-right: 4px solid #9A8E6A; }
+.sync-indicator { display:flex; align-items:center; gap:6px; font-size:10px; color:var(--text2); background:rgba(39,174,96,0.15); padding:4px 8px; border-radius:20px; border:1px solid rgba(39,174,96,0.3); }
+.sync-indicator.syncing { background:rgba(243,156,18,0.15); border-color:rgba(243,156,18,0.3); color:#F39C12; }
+.sync-indicator.error { background:rgba(231,76,60,0.15); border-color:rgba(231,76,60,0.3); color:#EF5350; }
+@media print {
+body{background:#fff!important;color:#000!important} .header,.tabs,.btn,.filters,.toast{display:none!important}
+.tab-panel{display:block!important}
+.kpi-card{border:1px solid #ccc!important;background:#f9f9f9!important;box-shadow:none!important;color:#000!important}
+.kpi-value,.kpi-label,.kpi-sub{color:#8B6914!important}
+table{font-size:9px} thead th{background:#C9A84C!important;color:#fff!important;-webkit-print-color-adjust:exact}
+.chart-container{border:1px solid #ccc!important;background:#fff!important}
+@page{margin:1cm;size:A4 landscape}
+}
+</style>
+</head>
+<body>
+<header class="header">
+<div class="logo">
+<div class="logo-icon">م</div>
+<div class="logo-text"><h1>موردين الغذائية وأهميتهم</h1><p>نظام دراسة المديونية والتوصيات المالية</p></div>
+</div>
+<div class="header-actions">
+<div id="syncIndicator" class="sync-indicator">🔄 غير متصل</div>
+<input type="file" id="excelInput" accept=".xlsx,.xls" style="display:none" onchange="handleExcelUpload(this)">
+<button class="btn btn-green" onclick="fetchFromGoogleSheet()">🔗 مزامنة جوجل شيت</button>
+<button class="btn btn-blue" onclick="document.getElementById('excelInput').click()">📤 رفع ملف Excel</button>
+<button class="btn btn-red" onclick="clearDebtData()">🗑 تصفير المديونية</button>
+<div class="date-box"><strong id="dateDisplay"></strong><div id="timeDisplay"></div><div id="lastSyncDisplay" style="font-size:9px;color:var(--success);margin-top:4px;"></div></div>
+</div>
+</header>
+<nav class="tabs">
+<div class="tab active" onclick="switchTab('dashboard')">📊 لوحة التحكم</div>
+<div class="tab" onclick="switchTab('aging')">📅 كشف عمر الدين</div>
+<div class="tab" onclick="switchTab('search')">🔍 البحث والفلترة</div>
+<div class="tab" onclick="switchTab('recommendations')">💡 دراسة التوصيات والسداد</div>
+<div class="tab" onclick="switchTab('cards')">👥 بطاقات الموردين</div>
+<div class="tab" onclick="switchTab('export')">🖨️ الطباعة والتصدير</div>
+</nav>
+<div class="content">
+<!-- DASHBOARD -->
+<div id="tab-dashboard" class="tab-panel active">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+<div class="section-title" style="margin:0">📊 نظرة شاملة على المديونية</div>
+<button class="btn btn-gold" onclick="window.print()">🖨️ طباعة اللوحة</button>
+</div>
+<div class="section-title">⭐ تصنيف الأهمية</div>
+<div class="kpi-grid" id="impKpis"></div>
+<div class="section-title">⏳ تفصيل المديونية حسب العمر</div>
+<div class="kpi-grid" id="agingKpis"></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:14px;margin-top:1rem;">
+<div class="chart-container"><canvas id="chartAging"></canvas></div>
+<div class="chart-container"><canvas id="chartImp"></canvas></div>
+</div>
+</div>
+<!-- AGING REPORT -->
+<div id="tab-aging" class="tab-panel">
+<div class="section-title">📅 كشف كامل بعمر الدين</div>
+<div class="filters">
+<input type="text" id="agingSearch" class="search-box" placeholder="بحث سريع..." oninput="renderAging()">
+<div class="filter-group"><label>الأهمية:</label><select id="agingImp" onchange="renderAging()"><option value="">الكل</option><option value="مهم جدا">مهم جدا</option><option value="مهم">مهم</option><option value="غير مهم">غير مهم</option></select></div>
+</div>
+<div class="table-wrapper">
+<table><thead><tr><th>#</th><th>اسم المورد</th><th>المنتجات</th><th>البراند</th><th>0-30</th><th>31-60</th><th>61-90</th><th>91-120</th><th>>120</th><th>الإجمالي</th><th>الأهمية</th><th>التوصية</th></tr></thead>
+<tbody id="agingBody"></tbody></table>
+</div>
+</div>
+<!-- SEARCH -->
+<div id="tab-search" class="tab-panel">
+<div class="section-title">🔍 البحث الذكي والفلترة المتقدمة</div>
+<div style="position:relative;max-width:400px;margin-bottom:1rem;">
+<input type="text" id="smartSearch" placeholder="اكتب اسم المورد أو الرقم..." oninput="filterSmartSearch()" style="width:100%">
+<datalist id="supList"></datalist>
+<div id="smartResults" style="position:absolute;background:var(--navy);border:1px solid var(--border);width:100%;max-height:200px;overflow:auto;z-index:100;display:none;border-radius:8px;margin-top:5px;"></div>
+</div>
+<div class="table-wrapper" id="searchResultWrapper" style="display:none;">
+<table><thead><tr><th>#</th><th>الاسم</th><th>الإجمالي</th><th>أقدم فترة</th><th>الأهمية</th><th>الإجراء</th></tr></thead>
+<tbody id="smartTable"></tbody></table>
+</div>
+</div>
+<!-- RECOMMENDATIONS STUDY -->
+<div id="tab-recommendations" class="tab-panel">
+<div class="section-title">💡 دراسة التوصيات ومبالغ السداد المطلوبة</div>
+<div class="kpi-grid" id="recKpis"></div>
+<div class="table-wrapper">
+<table class="study-table"><thead><tr><th>الأولوية</th><th>اسم المورد</th><th>الأهمية</th><th>التوصية</th><th>المبلغ المستحق</th><th>مقترح السداد</th><th>المبرر المالي</th></tr></thead>
+<tbody id="recTable"></tbody></table>
+</div>
+</div>
+<!-- CARDS -->
+<div id="tab-cards" class="tab-panel">
+<div class="filters">
+<input type="text" class="search-box" id="supSearch" placeholder="🔍 بحث في البطاقات..." oninput="renderCards()">
+</div>
+<div class="card-grid" id="supCardsGrid"></div>
+</div>
+<!-- EXPORT -->
+<div id="tab-export" class="tab-panel">
+<div class="section-title">🖨️ الطباعة والتصدير</div>
+<div class="card-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
+<div class="kpi-card" style="cursor:pointer" onclick="window.print()"><div class="kpi-label">🖨️ طباعة عامة</div><div class="kpi-sub">طباعة كافة التبويبات المعروضة</div></div>
+<div class="kpi-card" style="cursor:pointer" onclick="exportCurrentTabExcel()"><div class="kpi-label">📤 تصدير Excel</div><div class="kpi-sub">تصدير البيانات المفلترة</div></div>
+<div class="kpi-card" style="cursor:pointer" onclick="downloadTemplate()"><div class="kpi-label">📋 نموذج Excel</div><div class="kpi-sub">لتحديث البيانات الخارجية</div></div>
+<div class="kpi-card" style="cursor:pointer;border-right-color:var(--success)" onclick="toggleAutoSync()"><div class="kpi-label">🔄 المزامنة التلقائية</div><div class="kpi-sub" id="autoSyncStatus" style="color:var(--success)">مفعلة كل 5 دقائق</div></div>
+</div>
+</div>
+</div>
+<!-- MODAL -->
+<div class="modal-overlay" id="supModal">
+<div class="modal-content">
+<button class="close-modal" onclick="closeModal()">✖</button>
+<h2 style="color:var(--gold);margin-bottom:14px;font-size:16px;">📝 بطاقة المورد التفصيلية</h2>
+<input type="hidden" id="m_id">
+<div class="form-grid">
+<div class="form-group"><label>اسم المورد</label><input type="text" id="m_name" readonly style="opacity:0.7"></div>
+<div class="form-group"><label>رقم المورد</label><input type="text" id="m_code" readonly style="opacity:0.7"></div>
+<div class="form-group"><label>إجمالي المستحق</label><input type="number" id="m_total"></div>
+<div class="form-group"><label>0-30 يوم</label><input type="number" id="m_d30"></div>
+<div class="form-group"><label>31-60 يوم</label><input type="number" id="m_d60"></div>
+<div class="form-group"><label>61-90 يوم</label><input type="number" id="m_d90"></div>
+<div class="form-group"><label>91-120 يوم</label><input type="number" id="m_d120"></div>
+<div class="form-group"><label>>120 يوم (متأخر)</label><input type="number" id="m_over120" style="border-color:var(--danger);color:var(--danger)"></div>
+<div class="form-group"><label>أهمية المورد</label>
+<select id="m_imp"><option value="">غير محدد</option><option value="مهم جدا">مهم جدا</option><option value="مهم">مهم</option><option value="غير مهم">غير مهم</option></select>
+</div>
+<div class="form-group"><label>التوصيات</label>
+<select id="m_rec"><option value="">غير محدد</option><option value="سداد مبكر">سداد مبكر</option><option value="جدولة سداد">جدولة سداد</option><option value="تصفية رصيد المورد">تصفية رصيد المورد</option><option value="التنسيق مع الحسابات">التنسيق مع الحسابات</option></select>
+</div>
+<div class="form-group" style="grid-column: span 2;"><label>ملاحظات</label><textarea id="m_notes" rows="2"></textarea></div>
+</div>
+<div style="display:flex;gap:8px;">
+<button class="btn btn-gold" style="width:100%;padding:12px;" onclick="saveSupplier()">💾 حفظ التعديلات</button>
+<button class="btn btn-blue" style="padding:12px;" onclick="printSupplierCard()">🖨️ طباعة البطاقة</button>
+</div>
+</div>
+</div>
+<div class="toast" id="toast">✅ جاهز</div>
+
+<script>
+// ================= CONFIG =================
+const CONFIG = {
+    googleSheetURL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vShcDJeY-8MKFxxBP2vxmNg9F_cxq2vcwlQpeiKJFUcYpUcmQS8nSH4GVnmcRy7M-LdzS8oFT86r7yW/pub?output=csv',
+    autoSyncInterval: 300000, // 5 دقائق
+    enableAutoSync: true,
+    gitlabWebhookToken: '', // ضع توكن الويب هوك هنا
+    gitlabProjectId: '' // ضع رقم مشروع جيت لاب هنا
+};
+
+// ================= DATA INIT =================
+let suppliers = [];
+let charts = {};
+let lastSyncTime = null;
+let syncInterval = null;
+let isSyncing = false;
+
+const initialData = [
+{ id: 10506, name: "مؤسسة غذاء وحلوى التجارية", products: "حلويات مستورد", brand: "كيت كات", total: 164510.94, d30: 0, d60: 104801.80, d90: 0, d120: 59709.13, over120: 0, imp: "", rec: "", notes: "" },
+{ id: 10737, name: "شركة العوجان للمرطبات", products: "مشروبات", brand: "فيمتو / راني/ بابريكان", total: 159340.90, d30: 0, d60: 0, d90: 90749.45, d120: 68591.45, over120: 0, imp: "", rec: "", notes: "" },
+{ id: 10686, name: "شركة سويت لاند العالمية للتجارة", products: "حلويات", brand: "مشكل مصاميص وجيليات", total: 141725.94, d30: 0, d60: 0, d90: 0, d120: 0, over120: 141725.94, imp: "", rec: "", notes: "" },
+{ id: 10611, name: "شركة رست المياه", products: "ماء", brand: "رست", total: 127851.00, d30: 32812.23, d60: 54684.06, d90: 39754.81, d120: 599.89, over120: 0, imp: "", rec: "", notes: "" },
+{ id: 10518, name: "زاوية الاعتماد للتجارة", products: "غذائية", brand: "جبن سالم / ريحان", total: 113520.10, d30: 0, d60: 0, d90: 0, d120: 0, over120: 113520.10, imp: "", rec: "", notes: "" },
+{ id: 10661, name: "شركة اطعمة سيارا الشرق الاوسط", products: "مجمدات", brand: "سيارا", total: 89865.72, d30: 3660.45, d60: 56769.32, d90: 29435.95, d120: 0, over120: 0, imp: "", rec: "", notes: "" },
+{ id: 10206, name: "مؤسسة وردة الحلويات التجارية", products: "حلويات", brand: "سويت روز", total: 83217.66, d30: 0, d60: 0, d90: 0, d120: 0, over120: 83217.66, imp: "", rec: "", notes: "" },
+{ id: 10705, name: "شركة وفرة للصناعة و التنمية", products: "مكرونات+كورن فليكس+مجمدات", brand: "وفرة/حدائق السعودية/اغصان", total: 60874.97, d30: 0, d60: 12209.54, d90: 48665.43, d120: 0, over120: 0, imp: "", rec: "", notes: "" },
+{ id: 10719, name: "شركة المنجم للأغذية", products: "مجمدات + غذائية", brand: "داري", total: 60348.93, d30: 0, d60: 0, d90: 60348.93, d120: 0, over120: 0, imp: "", rec: "", notes: "" },
+{ id: 10762, name: "شركة الغذاء الصافي التجارية", products: "بقوليات / زيوت", brand: "دانا", total: 54711.52, d30: 0, d60: 0, d90: 34509.20, d120: 0, over120: 20202.32, imp: "", rec: "", notes: "" },
+{ id: 10820, name: "مؤسسة سيف التجارية", products: "العاب أطفال", brand: "جوي", total: 52969.17, d30: 0, d60: 0, d90: 0, d120: 0, over120: 52969.17, imp: "", rec: "", notes: "" },
+{ id: 10681, name: "فرع شركة اوال للالبان ذ م م", products: "مشروبات (حليب اوال)", brand: "اوال", total: 52236.40, d30: 0, d60: 8004.00, d90: 22206.51, d120: 0, over120: 22025.89, imp: "", rec: "", notes: "" },
+{ id: 10149, name: "مؤسسة مها احمد الجفالي ( غندور )", products: "كيك + بسكوت + علك", brand: "غندور", total: 51723.26, d30: 0, d60: 0, d90: 0, d120: 0, over120: 51723.26, imp: "", rec: "", notes: "" },
+{ id: 10583, name: "شركة تخير الغذاء للتجارة", products: "غذائية / مشروبات / حلويات", brand: "بران", total: 45832.25, d30: 0, d60: 0, d90: 0, d120: 0, over120: 45832.25, imp: "", rec: "", notes: "" },
+{ id: 10244, name: "شركة مصنع الذهين للغذاء", products: "بطاطس", brand: "", total: 43087.73, d30: 0, d60: 0, d90: 0, d120: 0, over120: 43087.73, imp: "", rec: "", notes: "" },
+{ id: 10730, name: "مؤسسة عبدالعزيز مسفر الاسمري", products: "بطاطس / مارشملو / جيليهات", brand: "تيتو", total: 42319.59, d30: 0, d60: 0, d90: 0, d120: 0, over120: 42319.59, imp: "", rec: "", notes: "" },
+{ id: 10287, name: "شركه السعوديه للماكولات الخفيفيه", products: "بطاطس", brand: "ليز / تسالي / دوريتوز", total: 38745.39, d30: 0, d60: 0, d90: 0, d120: 0, over120: 38745.39, imp: "", rec: "", notes: "" },
+{ id: 10486, name: "مصنع روض الاصيل للتعبئة", products: "بهارات", brand: "روض الأصيل", total: 37575.08, d30: 0, d60: 0, d90: 0, d120: 0, over120: 37575.08, imp: "", rec: "", notes: "" },
+{ id: 10138, name: "شركة نسور الجزيرة للتجارة", products: "مكسرات / بريتزسلز / كيك", brand: "ريو / ليروكسانا", total: 34831.59, d30: 0, d60: 0, d90: 0, d120: 0, over120: 34831.59, imp: "", rec: "", notes: "" },
+{ id: 10648, name: "شركة ارض النعيم التجارية", products: "بهارات", brand: "ارض النعيم", total: 34530.60, d30: 0, d60: 0, d90: 12033.60, d120: 6900, over120: 15597, imp: "", rec: "", notes: "" }
+];
+
+// Load from localStorage or use initial data
+if(localStorage.getItem('foodSuppliers')) {
+    suppliers = JSON.parse(localStorage.getItem('foodSuppliers'));
+} else {
+    suppliers = [...initialData];
+}
+
+// ================= UTILS =================
+function parseArabicNumber(str) {
+    if(!str || isNaN(str)) return 0;
+    return parseFloat(str.toString().replace(/[^0-9.\-]/g, '')) || 0;
+}
+function fmt(n){ return (n||0).toLocaleString('en-US',{maximumFractionDigits:2})+' ر.س'; }
+function showToast(m, type='success'){ 
+    const t=document.getElementById('toast'); 
+    t.textContent=m; 
+    t.className='toast show '+(type==='error'?'error':'success'); 
+    setTimeout(()=>t.classList.remove('show'),4000); 
+}
+function updateDateTime(){
+    const d=new Date();
+    document.getElementById('dateDisplay').textContent=d.toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    document.getElementById('timeDisplay').textContent=d.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'});
+    updateSyncStatus();
+}
+setInterval(updateDateTime, 60000); 
+
+function updateSyncStatus(){
+    const indicator = document.getElementById('syncIndicator');
+    const lastSyncEl = document.getElementById('lastSyncDisplay');
+    
+    if(isSyncing) {
+        indicator.className = 'sync-indicator syncing';
+        indicator.innerHTML = '⏳ جاري المزامنة...';
+        return;
+    }
+    
+    if(lastSyncTime) {
+        const timeStr = lastSyncTime.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'});
+        indicator.className = 'sync-indicator';
+        indicator.innerHTML = '🟢 متصل';
+        lastSyncEl.textContent = `✓ آخر تحديث: ${timeStr}`;
+    } else {
+        indicator.className = 'sync-indicator error';
+        indicator.innerHTML = '🔴 غير مزامن';
+        lastSyncEl.textContent = '';
+    }
+}
+
+function switchTab(id){
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById('tab-'+id).classList.add('active');
+    event.currentTarget.classList.add('active');
+    if(id==='dashboard')renderDash(); if(id==='aging')renderAging(); if(id==='cards')renderCards();
+    if(id==='recommendations')renderRecStudy();
+}
+
+// ================= GOOGLE SHEETS SYNC =================
+async function fetchFromGoogleSheet() {
+    if(isSyncing) { showToast('⏳ المزامنة قيد التنفيذ...', 'success'); return; }
+    
+    isSyncing = true;
+    updateSyncStatus();
+    
+    try {
+        // استخدام CORS proxy إذا لزم الأمر
+        const url = CONFIG.googleSheetURL;
+        const corsProxy = 'https://api.allorigins.win/raw?url=';
+        
+        const response = await fetch(corsProxy + encodeURIComponent(url), {
+            method: 'GET',
+            cache: 'no-store',
+            headers: { 'Accept': 'text/csv' }
+        });
+        
+        if (!response.ok) throw new Error('فشل الاتصال: ' + response.status);
+        
+        const csvText = await response.text();
+        const parsedData = parseCSV(csvText);
+        
+        if (parsedData.length === 0) throw new Error('لا توجد بيانات في الملف');
+        
+        let updatedCount = 0, newCount = 0;
+        
+        parsedData.forEach(row => {
+            // دعم الأعمدة بالعربي والإنجليزي
+            const id = parseArabicNumber(row['رقم المورد'] || row['Supplier_ID'] || row['id'] || row['ID']);
+            if (!id) return;
+            
+            const existing = suppliers.find(s => s.id === id);
+            const newObj = {
+                id: id,
+                name: row['اسم المورد'] || row['Supplier_Name'] || row['name'] || existing?.name || '',
+                products: row['المنتجات'] || row['Products'] || row['products'] || existing?.products || '',
+                brand: row['اسم البراند'] || row['Brand'] || row['brand'] || existing?.brand || '',
+                total: parseArabicNumber(row['الرصيد'] || row['Total'] || row['total'] || 0),
+                d30: parseArabicNumber(row['0 - 30'] || row['0-30'] || row['d30'] || 0),
+                d60: parseArabicNumber(row['31 - 60'] || row['31-60'] || row['d60'] || 0),
+                d90: parseArabicNumber(row['61 - 90'] || row['61-90'] || row['d90'] || 0),
+                d120: parseArabicNumber(row['91 - 120'] || row['91-120'] || row['d120'] || 0),
+                over120: parseArabicNumber(row['> 120'] || row['>120'] || row['over120'] || 0),
+                imp: existing?.imp || row['أهمية المورد'] || row['importance'] || row['priority'] || '',
+                rec: existing?.rec || row['التوصيات'] || row['recommendation'] || row['rec'] || '',
+                notes: existing?.notes || row['ملاحظات'] || row['notes'] || '',
+                lastUpdated: new Date().toISOString()
+            };
+            
+            if (existing) {
+                if (JSON.stringify(existing) !== JSON.stringify(newObj)) {
+                    Object.assign(existing, newObj);
+                    updatedCount++;
+                }
+            } else {
+                suppliers.push(newObj);
+                newCount++;
+            }
+        });
+        
+        localStorage.setItem('foodSuppliers', JSON.stringify(suppliers));
+        lastSyncTime = new Date();
+        
+        // تحديث الواجهة
+        renderDash(); renderAging(); renderCards(); renderRecStudy();
+        updateSyncStatus();
+        
+        const msg = `✅ مزامنة ناجحة! تحديث: ${updatedCount} | جديد: ${newCount}`;
+        showToast(msg, 'success');
+        
+        // إرسال إشعار لجيت لاب
+        if (CONFIG.gitlabWebhookToken && CONFIG.gitlabProjectId) {
+            await sendGitLabWebhook({ event: 'data_synced', updated: updatedCount, new: newCount, timestamp: lastSyncTime.toISOString() });
+        }
+        
+        return true;
+        
+    } catch (error) {
+        console.error('خطأ المزامنة:', error);
+        showToast('❌ فشل المزامنة: ' + error.message, 'error');
+        updateSyncStatus();
+        return false;
+    } finally {
+        isSyncing = false;
+    }
+}
+
+// ================= CSV PARSER =================
+function parseCSV(csv) {
+    const lines = csv.split('\n').filter(line => line.trim());
+    if (lines.length < 2) return [];
+    
+    const headers = parseCSVLine(lines[0]).map(h => h.trim().replace(/^"|"$/g, ''));
+    const result = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+        if(!lines[i].trim()) continue;
+        const values = parseCSVLine(lines[i]);
+        if (values.length >= headers.length) {
+            const obj = {};
+            headers.forEach((header, index) => {
+                obj[header] = (values[index] || '').toString().replace(/^"|"$/g, '').trim();
+            });
+            result.push(obj);
+        }
+    }
+    return result;
+}
+
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+            if (inQuotes && line[i+1] === '"') { current += '"'; i++; }
+            else { inQuotes = !inQuotes; }
+        } else if (char === ',' && !inQuotes) {
+            result.push(current);
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    result.push(current);
+    return result;
+}
+
+// ================= GITLAB WEBHOOK =================
+async function sendGitLabWebhook(payload) {
+    if (!CONFIG.gitlabWebhookToken || !CONFIG.gitlabProjectId) return;
+    
+    try {
+        await fetch(`https://gitlab.com/api/v4/projects/${CONFIG.gitlabProjectId}/trigger/pipeline`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                token: CONFIG.gitlabWebhookToken,
+                ref: 'main',
+                variables: { SYNC_PAYLOAD: JSON.stringify(payload) }
+            })
+        });
+    } catch (e) {
+        console.warn('فشل ويب هوك جيت لاب:', e);
+    }
+}
+
+// ================= AUTO SYNC =================
+function toggleAutoSync() {
+    CONFIG.enableAutoSync = !CONFIG.enableAutoSync;
+    const statusEl = document.getElementById('autoSyncStatus');
+    
+    if (CONFIG.enableAutoSync) {
+        startAutoSync();
+        statusEl.textContent = 'مفعلة كل 5 دقائق';
+        statusEl.style.color = 'var(--success)';
+        showToast('🔄 تم تفعيل المزامنة التلقائية');
+    } else {
+        stopAutoSync();
+        statusEl.textContent = 'معطلة';
+        statusEl.style.color = 'var(--text2)';
+        showToast('⏸ تم إيقاف المزامنة التلقائية');
+    }
+}
+
+function startAutoSync() {
+    if (syncInterval) clearInterval(syncInterval);
+    syncInterval = setInterval(() => {
+        if (!document.hidden && !isSyncing) {
+            fetchFromGoogleSheet();
+        }
+    }, CONFIG.autoSyncInterval);
+}
+
+function stopAutoSync() {
+    if (syncInterval) {
+        clearInterval(syncInterval);
+        syncInterval = null;
+    }
+}
+
+// الاستماع لتغير حالة التبويب لتجنب المزامنة في الخلفية
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        // التطبيق في الخلفية - يمكن إيقاف المزامنة مؤقتاً
+    } else if (CONFIG.enableAutoSync && !isSyncing) {
+        // العودة للواجهة - مزامنة فورية إذا مر وقت طويل
+        if (lastSyncTime && (Date.now() - lastSyncTime.getTime()) > CONFIG.autoSyncInterval) {
+            fetchFromGoogleSheet();
+        }
+    }
+});
+
+// ================= DASHBOARD =================
+function renderDash(){
+    const total = suppliers.reduce((a,s)=>a+s.total,0);
+    const imp = {"مهم جدا":0, "مهم":0, "غير مهم":0};
+    const aging = {"d30":0, "d60":0, "d90":0, "d120":0, "over120":0};
+    suppliers.forEach(s => {
+        if(imp[s.imp]!==undefined) imp[s.imp]++;
+        aging.d30 += s.d30; aging.d60 += s.d60; aging.d90 += s.d90; aging.d120 += s.d120; aging.over120 += s.over120;
+    });
+    document.getElementById('impKpis').innerHTML = `
+<div class="kpi-card" style="border-right:4px solid #C9A84C"><div class="kpi-label">مهم جدا</div><div class="kpi-value">${imp["مهم جدا"]}</div><div class="kpi-sub">مورد</div></div>
+<div class="kpi-card" style="border-right:4px solid #64B5F6"><div class="kpi-label">مهم</div><div class="kpi-value">${imp["مهم"]}</div><div class="kpi-sub">مورد</div></div>
+<div class="kpi-card" style="border-right:4px solid #9A8E6A"><div class="kpi-label">غير مهم</div><div class="kpi-value">${imp["غير مهم"]}</div><div class="kpi-sub">مورد</div></div>
+<div class="kpi-card"><div class="kpi-label">إجمالي المديونية</div><div class="kpi-value">${fmt(total)}</div><div class="kpi-sub">${suppliers.length} مورد</div></div>
+`;
+    document.getElementById('agingKpis').innerHTML = `
+<div class="kpi-card"><div class="kpi-label">0-30 يوم</div><div class="kpi-value">${fmt(aging.d30)}</div></div>
+<div class="kpi-card"><div class="kpi-label">31-60 يوم</div><div class="kpi-value">${fmt(aging.d60)}</div></div>
+<div class="kpi-card"><div class="kpi-label">61-90 يوم</div><div class="kpi-value">${fmt(aging.d90)}</div></div>
+<div class="kpi-card"><div class="kpi-label">91-120 يوم</div><div class="kpi-value">${fmt(aging.d120)}</div></div>
+<div class="kpi-card" style="border-right:4px solid var(--danger)"><div class="kpi-label">أكثر من 120</div><div class="kpi-value" style="color:#EF5350">${fmt(aging.over120)}</div></div>
+`;
+    if(charts.aging) charts.aging.destroy();
+    charts.aging = new Chart(document.getElementById('chartAging'), {
+        type:'doughnut',
+        data:{labels:['0-30','31-60','61-90','91-120','>120'], datasets:[{data:[aging.d30,aging.d60,aging.d90,aging.d120,aging.over120], backgroundColor:['#66BB6A','#C9A84C','#FFA726','#E74C3C','#8B0000']}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#A89B78',font:{family:'Tajawal'}}}}}
+    });
+    if(charts.imp) charts.imp.destroy();
+    const unclassified = suppliers.filter(s=>!imp[s.imp]).length;
+    charts.imp = new Chart(document.getElementById('chartImp'), {
+        type:'bar',
+        data:{labels:['مهم جدا','مهم','غير مهم','غير محدد'], datasets:[{label:'عدد الموردين', data:[imp["مهم جدا"], imp["مهم"], imp["غير مهم"], unclassified], backgroundColor:['#C9A84C','#64B5F6','#9A8E6A','#A89B78']}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{color:'#A89B78'}}, x:{ticks:{color:'#A89B78'}}}}
+    });
+}
+
+// ================= AGING REPORT =================
+function renderAging(){
+    const q = document.getElementById('agingSearch').value.toLowerCase();
+    const impF = document.getElementById('agingImp').value;
+    const f = suppliers.filter(s => {
+        if(q && !s.name.toLowerCase().includes(q) && !String(s.id).includes(q)) return false;
+        if(impF && s.imp !== impF) return false;
+        return true;
+    });
+    document.getElementById('agingBody').innerHTML = f.map(s => `
+<tr>
+<td>${s.id}</td><td style="font-weight:600">${s.name}</td><td>${s.products||'-'}</td><td>${s.brand||'-'}</td>
+<td>${fmt(s.d30)}</td><td>${fmt(s.d60)}</td><td>${fmt(s.d90)}</td><td>${fmt(s.d120)}</td><td class="amount-danger">${fmt(s.over120)}</td>
+<td style="font-weight:700">${fmt(s.total)}</td>
+<td><span class="badge ${s.imp==='مهم جدا'?'badge-high':s.imp==='مهم'?'badge-med':'badge-late'}">${s.imp||'-'}</span></td>
+<td>${s.rec||'-'}</td>
+</tr>`).join('') || '<tr><td colspan="12" style="text-align:center;color:var(--text2)">لا توجد نتائج</td></tr>';
+}
+
+// ================= SMART SEARCH =================
+function filterSmartSearch(){
+    const q = document.getElementById('smartSearch').value.toLowerCase();
+    const list = document.getElementById('supList');
+    list.innerHTML = '';
+    const resDiv = document.getElementById('smartResults');
+    if(q.length < 2) { resDiv.style.display='none'; document.getElementById('searchResultWrapper').style.display='none'; return; }
+    const matches = suppliers.filter(s => s.name.toLowerCase().includes(q) || String(s.id).includes(q)).slice(0,8);
+    matches.forEach(s => { const opt=document.createElement('option'); opt.value=s.name; opt.label='#'+s.id; list.appendChild(opt); });
+    resDiv.innerHTML = matches.map(s => `<div style="padding:8px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.05)" onclick="openModal(${s.id});document.getElementById('smartResults').style.display='none'">${s.name} <span style="color:var(--text2);font-size:9px">#${s.id} | ${fmt(s.total)}</span></div>`).join('');
+    resDiv.style.display = matches.length ? 'block' : 'none';
+}
+
+// ================= RECOMMENDATIONS STUDY =================
+function renderRecStudy(){
+    const recs = {"سداد مبكر":[], "جدولة سداد":[], "تصفية رصيد المورد":[], "التنسيق مع الحسابات":[]};
+    let totalRec = 0;
+    suppliers.forEach(s => { if(recs[s.rec]!==undefined) { recs[s.rec].push(s); totalRec += s.total; } });
+    document.getElementById('recKpis').innerHTML = `
+<div class="kpi-card"><div class="kpi-label">إجمالي مبالغ التوصيات</div><div class="kpi-value">${fmt(totalRec)}</div></div>
+<div class="kpi-card"><div class="kpi-label">سداد مبكر</div><div class="kpi-value">${recs["سداد مبكر"].length}</div><div class="kpi-sub">مورد (${fmt(recs["سداد مبكر"].reduce((a,b)=>a+b.total,0))})</div></div>
+<div class="kpi-card"><div class="kpi-label">جدولة سداد</div><div class="kpi-value">${recs["جدولة سداد"].length}</div><div class="kpi-sub">مورد (${fmt(recs["جدولة سداد"].reduce((a,b)=>a+b.total,0))})</div></div>
+`;
+    const rows = [];
+    suppliers.filter(s=>s.rec).sort((a,b)=>b.total-a.total).forEach(s => {
+        let suggested = 0, reason = "";
+        if(s.rec === "سداد مبكر") { suggested = s.over120 + s.d120; reason = "سداد العاجل لتفادي توقف الإمداد أو فوائد التأخير"; }
+        else if(s.rec === "جدولة سداد") { suggested = Math.ceil(s.total * 0.3); reason = "دفع 30% كقسط أول مع جدولة الباقي على 3 أشهر"; }
+        else if(s.rec === "تصفية رصيد المورد") { suggested = s.total; reason = "تصفية كاملة لإنهاء التعامل أو تسوية نهائية"; }
+        else if(s.rec === "التنسيق مع الحسابات") { suggested = s.d30; reason = "مطابقة فواتير ومراجعة كشف حساب قبل السداد"; }
+        let priClass = s.imp === "مهم جدا" ? "priority-1" : s.imp === "مهم" ? "priority-2" : "priority-3";
+        rows.push(`<tr class="${priClass}"><td>${s.imp||'-'}</td><td style="font-weight:600">${s.name}</td><td><span class="badge ${s.imp==='مهم جدا'?'badge-high':s.imp==='مهم'?'badge-med':'badge-late'}">${s.imp||'-'}</span></td>
+        <td><span class="badge badge-active">${s.rec}</span></td><td>${fmt(s.total)}</td><td style="color:var(--gold);font-weight:700">${fmt(suggested)}</td><td style="font-size:10px;color:var(--text2)">${reason}</td></tr>`);
+    });
+    document.getElementById('recTable').innerHTML = rows.join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text2)">يرجى تحديد التوصيات من بطاقات الموردين أولاً</td></tr>';
+}
+
+// ================= CARDS & MODAL =================
+function renderCards(){
+    const q = document.getElementById('supSearch').value.toLowerCase();
+    const f = suppliers.filter(s => !q || s.name.toLowerCase().includes(q) || String(s.id).includes(q));
+    document.getElementById('supCardsGrid').innerHTML = f.map(s => `
+<div class="sup-card" onclick="openModal(${s.id})">
+<div class="sc-header"><div><div class="sc-name">${s.name}</div><div class="sc-id">#${s.id} | ${s.brand||'-'}</div></div>
+<span class="badge ${s.imp==='مهم جدا'?'badge-high':s.imp==='مهم'?'badge-med':'badge-late'}">${s.imp||'غير مصنف'}</span></div>
+<div class="sc-amounts">
+<div class="sc-amount"><label>الإجمالي</label><span class="amount-danger">${fmt(s.total)}</span></div>
+<div class="sc-amount"><label>التوصية</label><span style="color:var(--success)">${s.rec||'-'}</span></div>
+</div>
+</div>`).join('');
+}
+
+function openModal(id){
+    const s = suppliers.find(x=>x.id===id); if(!s) return;
+    document.getElementById('m_id').value=s.id; document.getElementById('m_name').value=s.name;
+    document.getElementById('m_code').value=s.id; document.getElementById('m_total').value=s.total;
+    document.getElementById('m_d30').value=s.d30; document.getElementById('m_d60').value=s.d60;
+    document.getElementById('m_d90').value=s.d90; document.getElementById('m_d120').value=s.d120; document.getElementById('m_over120').value=s.over120;
+    document.getElementById('m_imp').value=s.imp; document.getElementById('m_rec').value=s.rec; document.getElementById('m_notes').value=s.notes||'';
+    document.getElementById('supModal').style.display='flex';
+}
+function closeModal(){ document.getElementById('supModal').style.display='none'; }
+document.getElementById('supModal')?.addEventListener('click', (e)=>{ if(e.target.id==='supModal') closeModal(); });
+
+function saveSupplier(){
+    const id=parseInt(document.getElementById('m_id').value);
+    const s=suppliers.find(x=>x.id===id); if(!s) return;
+    s.total=parseArabicNumber(document.getElementById('m_total').value); s.d30=parseArabicNumber(document.getElementById('m_d30').value);
+    s.d60=parseArabicNumber(document.getElementById('m_d60').value); s.d90=parseArabicNumber(document.getElementById('m_d90').value);
+    s.d120=parseArabicNumber(document.getElementById('m_d120').value); s.over120=parseArabicNumber(document.getElementById('m_over120').value);
+    s.imp=document.getElementById('m_imp').value; s.rec=document.getElementById('m_rec').value; s.notes=document.getElementById('m_notes').value;
+    s.lastUpdated = new Date().toISOString();
+    localStorage.setItem('foodSuppliers', JSON.stringify(suppliers));
+    closeModal(); renderDash(); renderAging(); renderCards(); renderRecStudy(); showToast('✅ تم حفظ التعديلات وتحليل التوصيات');
+}
+
+function printSupplierCard(){
+    const id=document.getElementById('m_id').value; const s=suppliers.find(x=>x.id==id); if(!s) return;
+    const html=`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>بطاقة ${s.name}</title><style>body{font-family:'Tajawal',sans-serif;direction:rtl;color:#000;padding:20px}h1{color:#8B6914;text-align:center;margin-bottom:5px;font-size:20px}.sub{text-align:center;color:#555;font-size:12px;margin-bottom:15px;border-bottom:2px solid #C9A84C;padding-bottom:10px}table{width:100%;border-collapse:collapse;font-size:11px}th{background:#C9A84C;color:#fff;padding:8px;text-align:right}td{padding:6px 8px;border:1px solid #ddd;text-align:right}@media print{body{padding:0}@page{margin:1cm}}</style></head><body><h1>موردين الغذائية وأهميتهم</h1><div class="sub">بطاقة مورد تفصيلية | التاريخ: ${new Date().toLocaleDateString('ar-SA')}</div><table><tr><th>اسم المورد</th><td>${s.name}</td><th>رقم المورد</th><td>${s.id}</td></tr><tr><th>الإجمالي المستحق</th><td style="color:red;font-weight:bold">${fmt(s.total)}</td><th>الأهمية</th><td>${s.imp||'-'}</td></tr><tr><th>0-30 يوم</th><td>${fmt(s.d30)}</td><th>31-60 يوم</th><td>${fmt(s.d60)}</td></tr><tr><th>61-90 يوم</th><td>${fmt(s.d90)}</td><th>91-120 يوم</th><td>${fmt(s.d120)}</td></tr><tr><th>>120 يوم</th><td style="color:red">${fmt(s.over120)}</td><th>التوصية</th><td>${s.rec||'-'}</td></tr><tr><th>ملاحظات</th><td colspan="3">${s.notes||'—'}</td></tr></table><div style="margin-top:30px;display:flex;justify-content:space-between"><div style="text-align:center;width:200px">التوقيع: _______________</div><div style="text-align:center;width:200px">الختم: _______________</div></div></body></html>`;
+    const w=window.open('','_blank'); w.document.write(html); w.document.close(); w.focus(); setTimeout(()=>w.print(),500);
+}
+
+// ================= EXCEL / EXPORT =================
+function handleExcelUpload(input){
+    const file=input.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=e=>{
+        try{
+            const wb=XLSX.read(e.target.result,{type:'binary'});
+            const ws=wb.Sheets[wb.SheetNames[0]];
+            const data=XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});
+            let cnt=0, newCnt=0;
+            data.forEach(r=>{
+                const id=parseArabicNumber(r['رقم المورد']||r['Supplier_ID']||r['id']); if(!id) return;
+                const existing=suppliers.find(s=>s.id===id);
+                const obj={id, name:r['اسم المورد']||r['Supplier_Name']||existing?.name||'', products:r['المنتجات']||r['Products']||existing?.products||'', brand:r['اسم البراند']||r['Brand']||existing?.brand||'', total:parseArabicNumber(r['الرصيد']||r['Total']), d30:parseArabicNumber(r['0 - 30']||r['0-30']), d60:parseArabicNumber(r['31 - 60']||r['31-60']), d90:parseArabicNumber(r['61 - 90']||r['61-90']), d120:parseArabicNumber(r['91 - 120']||r['91-120']), over120:parseArabicNumber(r['> 120']||r['>120']), imp:existing?.imp||r['أهمية المورد']||'', rec:existing?.rec||r['التوصيات']||'', notes:existing?.notes||''};
+                if(existing) { Object.assign(existing, obj); cnt++; } else { suppliers.push(obj); newCnt++; cnt++; }
+            });
+            localStorage.setItem('foodSuppliers', JSON.stringify(suppliers));
+            renderDash(); renderAging(); renderCards(); renderRecStudy();
+            showToast(`✅ تم تحديث ${cnt} مورد (جديد: ${newCnt})`);
+        }catch(err){showToast('❌ خطأ في قراءة الملف: '+err.message, 'error');}
+    };
+    reader.readAsBinaryString(file); input.value='';
+}
+
+function exportCurrentTabExcel(){
+    const ws=XLSX.utils.json_to_sheet(suppliers.map(s=>({'رقم المورد':s.id,'اسم المورد':s.name,'المنتجات':s.products,'اسم البراند':s.brand,'0 - 30':s.d30,'31 - 60':s.d60,'61 - 90':s.d90,'91 - 120':s.d120,'> 120':s.over120,'الرصيد':s.total,'أهمية المورد':s.imp,'التوصيات':s.rec,'ملاحظات':s.notes})));
+    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'كشف الموردين'); XLSX.writeFile(wb,'كشف_الموردين_الغذائية_'+new Date().toISOString().slice(0,10)+'.xlsx'); showToast('📤 تم تصدير Excel');
+}
+
+function downloadTemplate(){
+    const ws=XLSX.utils.aoa_to_sheet([['رقم المورد','اسم المورد','المنتجات','اسم البراند','الرصيد','0 - 30','31 - 60','61 - 90','91 - 120','> 120','أهمية المورد','التوصيات','ملاحظات'],[10000,'مورد تجريبي','حلويات','كيت كات',5000,2000,1500,1000,500,0,'مهم','سداد مبكر','']]);
+    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'نموذج'); XLSX.writeFile(wb,'نموذج_تحديث_المديونية.xlsx'); showToast('📋 تم تنزيل النموذج');
+}
+
+function clearDebtData(){ if(!confirm('⚠️ هل تريد تصفير جميع المبالغ والمستحقات؟')) return; suppliers.forEach(s=>{s.total=0;s.d30=0;s.d60=0;s.d90=0;s.d120=0;s.over120=0;}); localStorage.setItem('foodSuppliers', JSON.stringify(suppliers)); renderDash(); renderAging(); renderCards(); renderRecStudy(); showToast('🗑 تم تصفير المبالغ'); }
+
+// ================= INIT =================
+async function initApp() {
+    renderDash(); renderAging(); renderCards(); renderRecStudy();
+    
+    // محاولة المزامنة التلقائية عند التحميل الأول
+    if (CONFIG.enableAutoSync) {
+        await fetchFromGoogleSheet();
+        startAutoSync();
+    }
+    
+    // تحديث الوقت كل دقيقة
+    setInterval(updateDateTime, 60000);
+    updateDateTime();
+    
+    console.log('✅ التطبيق جاهز | جوجل شيت: ' + (CONFIG.googleSheetURL ? 'مفعل' : 'معطل'));
+}
+
+// تشغيل التطبيق
+initApp();
+</script>
+</body>
+</html>
